@@ -14,7 +14,7 @@ defmodule Noizu.ClickUp.Task do
   @doc "Creates a task in a list. `POST /list/{list_id}/task` — `attrs` requires `name`. Returns the task object."
   @spec create(Client.t(), String.t() | integer(), map()) :: {:ok, map()} | {:error, Error.t()}
   def create(client, list_id, attrs),
-    do: Request.request(client, :post, "/list/#{list_id}/task", json: attrs)
+    do: Request.request(client, :post, "/list/#{Request.segment(list_id)}/task", json: attrs)
 
   @doc """
   Gets one task (object at top level, no wrapper).
@@ -24,17 +24,21 @@ defmodule Noizu.ClickUp.Task do
   """
   @spec get(Client.t(), String.t(), keyword()) :: {:ok, map()} | {:error, Error.t()}
   def get(client, task_id, opts \\ []),
-    do: Request.request(client, :get, "/task/#{task_id}", params: opts)
+    do: Request.request(client, :get, "/task/#{Request.segment(task_id)}", params: opts)
 
   @doc "Updates a task. `PUT /task/{task_id}` — `attrs` partial; `opts` query params (`:custom_task_ids`, `:team_id`)."
   @spec update(Client.t(), String.t(), map(), keyword()) :: {:ok, map()} | {:error, Error.t()}
   def update(client, task_id, attrs, opts \\ []),
-    do: Request.request(client, :put, "/task/#{task_id}", params: opts, json: attrs)
+    do:
+      Request.request(client, :put, "/task/#{Request.segment(task_id)}",
+        params: opts,
+        json: attrs
+      )
 
   @doc "Deletes a task (HTTP 204). `DELETE /task/{task_id}` — returns `{:ok, %{}}`."
   @spec delete(Client.t(), String.t(), keyword()) :: {:ok, map()} | {:error, Error.t()}
   def delete(client, task_id, opts \\ []),
-    do: Request.request(client, :delete, "/task/#{task_id}", params: opts)
+    do: Request.request(client, :delete, "/task/#{Request.segment(task_id)}", params: opts)
 
   @doc """
   Gets one page of filtered workspace tasks.
@@ -52,7 +56,7 @@ defmodule Noizu.ClickUp.Task do
   @spec get_team_tasks(Client.t(), String.t() | integer(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def get_team_tasks(client, team_id, params \\ []),
-    do: Request.request(client, :get, "/team/#{team_id}/task", params: params)
+    do: Request.request(client, :get, "/team/#{Request.segment(team_id)}/task", params: params)
 
   @doc """
   Lazy stream over **all** filtered workspace tasks, paging with `page`

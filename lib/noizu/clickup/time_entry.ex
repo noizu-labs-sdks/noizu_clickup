@@ -21,7 +21,10 @@ defmodule Noizu.ClickUp.TimeEntry do
   """
   @spec list(Client.t(), String.t() | integer(), keyword()) :: {:ok, map()} | {:error, Error.t()}
   def list(client, team_id, params \\ []),
-    do: Request.request(client, :get, "/team/#{team_id}/time_entries", params: params)
+    do:
+      Request.request(client, :get, "/team/#{Request.segment(team_id)}/time_entries",
+        params: params
+      )
 
   @doc """
   Creates a time entry. `POST /team/{team_id}/time_entries`.
@@ -33,13 +36,21 @@ defmodule Noizu.ClickUp.TimeEntry do
   @spec create(Client.t(), String.t() | integer(), map(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def create(client, team_id, attrs, params \\ []) do
-    Request.request(client, :post, "/team/#{team_id}/time_entries", params: params, json: attrs)
+    Request.request(client, :post, "/team/#{Request.segment(team_id)}/time_entries",
+      params: params,
+      json: attrs
+    )
   end
 
   @doc "Gets one time entry. `GET /team/{team_id}/time_entries/{timer_id}` — returns `{\"data\" => {...}}`."
   @spec get(Client.t(), String.t() | integer(), String.t()) :: {:ok, map()} | {:error, Error.t()}
   def get(client, team_id, timer_id),
-    do: Request.request(client, :get, "/team/#{team_id}/time_entries/#{timer_id}")
+    do:
+      Request.request(
+        client,
+        :get,
+        "/team/#{Request.segment(team_id)}/time_entries/#{Request.segment(timer_id)}"
+      )
 
   @doc """
   Updates a time entry. `PUT /team/{team_id}/time_entries/{timer_id}`.
@@ -51,7 +62,10 @@ defmodule Noizu.ClickUp.TimeEntry do
   @spec update(Client.t(), String.t() | integer(), String.t(), map(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def update(client, team_id, timer_id, attrs, params \\ []) do
-    Request.request(client, :put, "/team/#{team_id}/time_entries/#{timer_id}",
+    Request.request(
+      client,
+      :put,
+      "/team/#{Request.segment(team_id)}/time_entries/#{Request.segment(timer_id)}",
       params: params,
       json: attrs
     )
@@ -61,13 +75,18 @@ defmodule Noizu.ClickUp.TimeEntry do
   @spec delete(Client.t(), String.t() | integer(), String.t()) ::
           {:ok, map()} | {:error, Error.t()}
   def delete(client, team_id, timer_id),
-    do: Request.request(client, :delete, "/team/#{team_id}/time_entries/#{timer_id}")
+    do:
+      Request.request(
+        client,
+        :delete,
+        "/team/#{Request.segment(team_id)}/time_entries/#{Request.segment(timer_id)}"
+      )
 
   @doc "Starts a timer for the authenticated user. `POST /team/{team_id}/time_entries/start` — `attrs` optional (`description`, `billable`, `tags`, `tid`). Returns `{\"data\" => {...}}`."
   @spec start(Client.t(), String.t() | integer(), map(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def start(client, team_id, attrs \\ %{}, params \\ []) do
-    Request.request(client, :post, "/team/#{team_id}/time_entries/start",
+    Request.request(client, :post, "/team/#{Request.segment(team_id)}/time_entries/start",
       params: params,
       json: attrs
     )
@@ -76,5 +95,5 @@ defmodule Noizu.ClickUp.TimeEntry do
   @doc "Stops the authenticated user's running timer. `POST /team/{team_id}/time_entries/stop` — returns `{\"data\" => {...}}`."
   @spec stop(Client.t(), String.t() | integer()) :: {:ok, map()} | {:error, Error.t()}
   def stop(client, team_id),
-    do: Request.request(client, :post, "/team/#{team_id}/time_entries/stop")
+    do: Request.request(client, :post, "/team/#{Request.segment(team_id)}/time_entries/stop")
 end

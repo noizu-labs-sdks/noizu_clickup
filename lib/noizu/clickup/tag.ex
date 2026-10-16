@@ -31,7 +31,7 @@ defmodule Noizu.ClickUp.Tag do
   @spec update_space_tag(Client.t(), String.t() | integer(), String.t(), map()) ::
           {:ok, map()} | {:error, Error.t()}
   def update_space_tag(client, space_id, tag_name, tag_attrs) do
-    Request.request(client, :put, "/space/#{space_id}/tag/#{encode(tag_name)}",
+    Request.request(client, :put, "/space/#{space_id}/tag/#{Request.segment(tag_name)}",
       json: %{tag: tag_attrs}
     )
   end
@@ -40,19 +40,23 @@ defmodule Noizu.ClickUp.Tag do
   @spec delete_space_tag(Client.t(), String.t() | integer(), String.t()) ::
           {:ok, map()} | {:error, Error.t()}
   def delete_space_tag(client, space_id, tag_name),
-    do: Request.request(client, :delete, "/space/#{space_id}/tag/#{encode(tag_name)}")
+    do: Request.request(client, :delete, "/space/#{space_id}/tag/#{Request.segment(tag_name)}")
 
   @doc "Adds an existing space tag to a task. `POST /task/{task_id}/tag/{tag_name}` — returns `{:ok, %{}}`."
   @spec add_to_task(Client.t(), String.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def add_to_task(client, task_id, tag_name, opts \\ []),
-    do: Request.request(client, :post, "/task/#{task_id}/tag/#{encode(tag_name)}", params: opts)
+    do:
+      Request.request(client, :post, "/task/#{task_id}/tag/#{Request.segment(tag_name)}",
+        params: opts
+      )
 
   @doc "Removes a tag from a task. `DELETE /task/{task_id}/tag/{tag_name}` — returns `{:ok, %{}}`."
   @spec remove_from_task(Client.t(), String.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def remove_from_task(client, task_id, tag_name, opts \\ []),
-    do: Request.request(client, :delete, "/task/#{task_id}/tag/#{encode(tag_name)}", params: opts)
-
-  defp encode(name), do: URI.encode(name, &URI.char_unreserved?/1)
+    do:
+      Request.request(client, :delete, "/task/#{task_id}/tag/#{Request.segment(tag_name)}",
+        params: opts
+      )
 end
