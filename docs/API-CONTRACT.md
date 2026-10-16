@@ -1,5 +1,7 @@
 # Noizu.ClickUp — API Contract
 
+<!-- 〚📁:13c09693-e042-5f66-87a2-8a7e9d10bf66〛 noizu_clickup:api_contract :: ClickUp API v2 client contract — endpoint coverage, pagination, error shape, rate-limit/retry behavior; source of truth, deviations are bugs. -->
+
 Elixir client contract for the **ClickUp API v2**. Every fact below was verified against the
 official reference at `developer.clickup.com` (2026-10-17); endpoint pages are cited inline.
 The client follows this document; deviations are bugs.
@@ -184,10 +186,14 @@ Exceeding → **HTTP 429** with headers:
 | `X-RateLimit-Remaining` | requests left in window |
 | `X-RateLimit-Reset` | window reset, **Unix timestamp** |
 
-**Retry policy (client):** on 429 the client sleeps until `X-RateLimit-Reset` (clamped to
-`retry_cap_ms`, default 15 s; missing header → 1 s), then retries; at most `max_retries`
-(default 2) retries before returning the 429 as an error. Req's built-in retry is disabled so
-this is the single retry layer. Retries are idempotency-safe in practice for ClickUp reads;
+**Retry policy (client):** on 429 the client sleeps until `X-RateLimit-Reset`
+(epoch seconds; smaller values are read as seconds-until-reset) or, failing
+that, `Retry-After` seconds — every wait clamped to `0..retry_cap_ms`
+(default 15 s; neither header parseable → 1 s) — then retries; at most
+`max_retries` (default 2) retries before returning the 429 as an error. The
+sleep function is overridable per client (`:retry_sleep`, default
+`&Process.sleep/1`). Req's built-in retry is disabled so this is the single
+retry layer. Retries are idempotency-safe in practice for ClickUp reads;
 mutations retried only on 429, never on 5xx/timeouts.
 
 ## 6. Intentionally NOT covered

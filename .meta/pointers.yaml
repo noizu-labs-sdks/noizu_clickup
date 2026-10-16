@@ -1,0 +1,102 @@
+---
+pointers:
+  13c09693-e042-5f66-87a2-8a7e9d10bf66:
+    created_at: 2026-10-16T22:05:28.047136Z
+    description: ClickUp API v2 client contract — endpoint coverage, pagination, error shape, rate-limit/retry behavior; source of truth, deviations are bugs.
+    file_path: docs/API-CONTRACT.md
+    function: noizu_clickup:api_contract
+    kind: file
+    line: 3
+    locations:
+      - file_path: docs/API-CONTRACT.md
+        line: 3
+    token: 𓾯𓩹𔒙𔒆
+    updated_at: 2026-10-16T22:05:28.047136Z
+  42f0119c-3fa3-52bc-a359-3da9bfd5364a:
+    created_at: 2026-10-16T22:06:28.721853Z
+    description: Architecture overview — components, request lifecycle, errors/retry, tech stack, key decisions.
+    file_path: docs/PROJ-ARCH.md
+    function: noizu_clickup:proj_arch
+    kind: file
+    line: 3
+    locations:
+      - file_path: docs/PROJ-ARCH.md
+        line: 3
+    token: 𓘈𓡰𔔝𓉺
+    updated_at: 2026-10-16T22:06:28.721853Z
+  46ef6388-cd8c-5aa3-92a1-ddcc065e88cb:
+    created_at: 2026-10-16T22:06:28.721879Z
+    description: Single 429-only retry layer — bounded attempts, reset-based wait clamped to retry_cap_ms.
+    file_path: docs/arch/error-retry.md
+    function: noizu_clickup:retry_policy
+    kind: logic
+    line: 25
+    locations:
+      - end_line: 46
+        file_path: docs/arch/error-retry.md
+        line: 25
+    token: 𔃎𔑿𓍪𓅋
+    updated_at: 2026-10-16T22:06:28.721879Z
+  5a5babcb-f098-5d4e-a190-fd9fe9daf895:
+    created_at: 2026-10-16T22:06:28.721857Z
+    description: Vulnerability register — nine entries with severity, STRIDE category, component, and status.
+    file_path: docs/THREAT-MODEL.md
+    function: noizu_clickup:vuln_register
+    kind: component
+    line: 63
+    locations:
+      - end_line: 77
+        file_path: docs/THREAT-MODEL.md
+        line: 63
+    token: 𓛾𔒦𔗹𓚵
+    updated_at: 2026-10-16T22:06:28.721857Z
+  69cf345d-6e03-5245-af86-d6c46c43409d:
+    created_at: 2026-10-16T22:06:28.721837Z
+    description: Living threat model — trust boundaries, attack surface, register T-001..T-009, positive controls, residual risk.
+    file_path: docs/THREAT-MODEL.md
+    function: noizu_clickup:threat_model
+    kind: file
+    line: 3
+    locations:
+      - file_path: docs/THREAT-MODEL.md
+        line: 3
+    token: 𓋮𔖕𓮉𓂍
+    updated_at: 2026-10-16T22:06:28.721837Z
+  6eb78b5e-6b1e-5f4c-9645-4b08c0217004:
+    created_at: 2026-10-16T22:06:28.721849Z
+    description: Request lifecycle — resource module → Request.request/4 → Req dispatch → 429 retry → result shaping.
+    file_path: docs/arch/data-flow.md
+    function: noizu_clickup:request_flow
+    kind: logic
+    line: 6
+    locations:
+      - end_line: 64
+        file_path: docs/arch/data-flow.md
+        line: 6
+    token: 𓍭𓷈𓑿𓶄
+    updated_at: 2026-10-16T22:06:28.721849Z
+  b4d161ac-ed04-5a62-a5fb-39eaae4dca77:
+    created_at: 2026-10-16T22:06:28.721869Z
+    description: System diagram — consumer → resource modules → Request layer → ClickUp API v2, with OAuth and webhook-verify side paths.
+    file_path: docs/PROJ-ARCH.md
+    function: noizu_clickup:arch_diagram
+    kind: diagram
+    line: 14
+    locations:
+      - end_line: 45
+        file_path: docs/PROJ-ARCH.md
+        line: 14
+    token: 𓲣𓦲𓼔𓻇
+    updated_at: 2026-10-16T22:06:28.721869Z
+  cb5aa103-6799-5e0c-a34d-d62f41224891:
+    created_at: 2026-10-16T22:05:28.047118Z
+    description: Navigable project tree — lib/, test/, docs/ with per-directory breakdowns in layout/.
+    file_path: docs/PROJ-LAYOUT.md
+    function: noizu_clickup:proj_layout
+    kind: file
+    line: 3
+    locations:
+      - file_path: docs/PROJ-LAYOUT.md
+        line: 3
+    token: 𓰕𓚪𔓸𓤡
+    updated_at: 2026-10-16T22:05:28.047118Z

@@ -3,6 +3,34 @@
 All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: SemVer.
 
+## Unreleased
+
+### Security
+- `Noizu.ClickUp.Client` has a redacting `Inspect` impl (T-001): `inspect/2` masks the token
+  to a ≤4-character prefix + `[REDACTED]`, so debug logs, telemetry, and crash reports no
+  longer print the raw credential. Error paths verified to never surface the token or the
+  OAuth `client_secret` (`Noizu.ClickUp.RedactionTest`).
+- Every resource id is URI-encoded into its URL path via a shared path-segment
+  helper on the internal request module (T-005): a crafted id like `1/../../team?x=1`
+  can no longer traverse the path or inject a query (`Noizu.ClickUp.PathEncodingTest`).
+- 429 retry hardening: waits are clamped to `0..retry_cap_ms` for negative, past, garbage,
+  and far-future reset values; small `X-RateLimit-Reset` values are honored as
+  seconds-until-reset instead of being misread as past epochs; `Retry-After` (seconds) is
+  honored as a fallback; the sleep is injectable (`Client` `:retry_sleep`) for tests
+  (`Noizu.ClickUp.ErrorRateLimitTest`). Also fixes the header lookup against Req 0.7's
+  map-shaped response headers — the reset header was silently ignored and the retry always
+  slept the fixed 1 s default.
+- Webhook docs (T-003 guidance, no new crypto — scheme is ClickUp's): the `Webhook`
+  moduledoc and README now instruct consumers to verify against the **raw** request body
+  and dedupe on `webhook_id` + `event` + `history_items[].id`.
+
+### Added
+- Project docs: layout map (`docs/PROJ-LAYOUT.md` + `docs/layout/`), architecture overview
+  (`docs/PROJ-ARCH.md` + `docs/arch/`), threat model (`docs/THREAT-MODEL.md` + `docs/threats/`),
+  and durable doc pointers (`.meta/pointers.yaml`).
+- CI: GitHub Actions workflow (format check, `--warnings-as-errors` compile, tests,
+  `mix hex.audit`) on Elixir 1.15/OTP 25 and 1.18/OTP 27 for push/PR on develop, stage, main.
+
 ## 0.1.0 - 2026-10-17
 
 Initial release. Contract-first client for the ClickUp API v2 (see `docs/API-CONTRACT.md`).

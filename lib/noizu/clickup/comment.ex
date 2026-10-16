@@ -18,7 +18,7 @@ defmodule Noizu.ClickUp.Comment do
   @spec list_task_comments(Client.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def list_task_comments(client, task_id, params \\ []),
-    do: Request.request(client, :get, "/task/#{task_id}/comment", params: params)
+    do: Request.request(client, :get, "/task/#{Request.segment(task_id)}/comment", params: params)
 
   @doc """
   Creates a task comment. `POST /task/{task_id}/comment`.
@@ -33,17 +33,21 @@ defmodule Noizu.ClickUp.Comment do
       |> stringify()
       |> Map.put_new("notify_all", true)
 
-    Request.request(client, :post, "/task/#{task_id}/comment", params: opts, json: attrs)
+    Request.request(client, :post, "/task/#{Request.segment(task_id)}/comment",
+      params: opts,
+      json: attrs
+    )
   end
 
   @doc "Updates a comment. `PUT /comment/{comment_id}` — `attrs`: `comment_text`, `assignee`, `resolved`."
   @spec update(Client.t(), String.t() | integer(), map()) :: {:ok, map()} | {:error, Error.t()}
   def update(client, comment_id, attrs),
-    do: Request.request(client, :put, "/comment/#{comment_id}", json: attrs)
+    do: Request.request(client, :put, "/comment/#{Request.segment(comment_id)}", json: attrs)
 
   @doc "Deletes a comment. `DELETE /comment/{comment_id}` — returns `{:ok, %{}}`."
   @spec delete(Client.t(), String.t() | integer()) :: {:ok, map()} | {:error, Error.t()}
-  def delete(client, comment_id), do: Request.request(client, :delete, "/comment/#{comment_id}")
+  def delete(client, comment_id),
+    do: Request.request(client, :delete, "/comment/#{Request.segment(comment_id)}")
 
   @doc """
   Lazy stream over **all** task comments, walking older pages with the
