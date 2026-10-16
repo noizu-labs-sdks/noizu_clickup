@@ -11,11 +11,11 @@ defmodule Noizu.ClickUp.Member do
   @doc "Lists members of a task. `GET /task/{task_id}/member` — returns `{\"members\" => [...]}`."
   @spec list_task_members(Client.t(), String.t()) :: {:ok, map()} | {:error, Error.t()}
   def list_task_members(client, task_id),
-    do: Request.request(client, :get, "/task/#{task_id}/member")
+    do: Request.request(client, :get, "/task/#{Request.segment(task_id)}/member")
 
   @doc "Lists members of a list. `GET /list/{list_id}/member` — returns `{\"members\" => [...]}`."
   @spec list_list_members(Client.t(), String.t() | integer()) ::
           {:ok, map()} | {:error, Error.t()}
   def list_list_members(client, list_id),
-    do: Request.request(client, :get, "/list/#{list_id}/member")
+    do: Request.request(client, :get, "/list/#{Request.segment(list_id)}/member")
 end

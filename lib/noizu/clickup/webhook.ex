@@ -5,6 +5,22 @@ defmodule Noizu.ClickUp.Webhook do
   Create returns the webhook's `secret`; each delivery carries an `X-Signature`
   header — the lowercase hex HMAC-SHA256 of the **raw request body**, keyed with
   that secret. Verify against raw bytes, never re-serialized JSON.
+
+  ## Consumer obligations (T-003 — ClickUp's scheme has no anti-replay material)
+
+  The signature covers the body only — no timestamp or nonce is signed, so a
+  captured delivery would verify forever. The library cannot fix this
+  unilaterally (it would need ClickUp to sign a timestamp); consumers must:
+
+    * Verify against the **raw request body** — capture the bytes before
+      `Plug.Parsers` (custom body reader / raw-body caching). Re-serialized
+      JSON fails closed (returns `false`), never open.
+    * **Dedupe deliveries**: persist processed ids and drop repeats, keyed on
+      `webhook_id` + `event` plus the `history_items[].id` values in the
+      payload — the standard mitigation against replays.
+    * Treat handlers as idempotent (upsert semantics) so a replay is a no-op.
+
+  See `docs/threats/webhook-signature.md` for the full analysis.
   """
 
   alias Noizu.ClickUp.Client
@@ -13,7 +29,8 @@ defmodule Noizu.ClickUp.Webhook do
 
   @doc "Lists webhooks created by the authenticated user. `GET /team/{team_id}/webhook` — returns `{\"webhooks\" => [...]}`."
   @spec list(Client.t(), String.t() | integer()) :: {:ok, map()} | {:error, Error.t()}
-  def list(client, team_id), do: Request.request(client, :get, "/team/#{team_id}/webhook")
+  def list(client, team_id),
+    do: Request.request(client, :get, "/team/#{Request.segment(team_id)}/webhook")
 
   @doc """
   Creates a webhook. `POST /team/{team_id}/webhook`.
@@ -24,16 +41,17 @@ defmodule Noizu.ClickUp.Webhook do
   """
   @spec create(Client.t(), String.t() | integer(), map()) :: {:ok, map()} | {:error, Error.t()}
   def create(client, team_id, attrs),
-    do: Request.request(client, :post, "/team/#{team_id}/webhook", json: attrs)
+    do: Request.request(client, :post, "/team/#{Request.segment(team_id)}/webhook", json: attrs)
 
   @doc "Updates a webhook. `PUT /webhook/{webhook_id}` — `attrs`: `endpoint`, `events`, `status` (`\"active\"`/`\"inactive\"`)."
   @spec update(Client.t(), String.t(), map()) :: {:ok, map()} | {:error, Error.t()}
   def update(client, webhook_id, attrs),
-    do: Request.request(client, :put, "/webhook/#{webhook_id}", json: attrs)
+    do: Request.request(client, :put, "/webhook/#{Request.segment(webhook_id)}", json: attrs)
 
   @doc "Deletes a webhook. `DELETE /webhook/{webhook_id}` — returns `{:ok, %{}}`."
   @spec delete(Client.t(), String.t()) :: {:ok, map()} | {:error, Error.t()}
-  def delete(client, webhook_id), do: Request.request(client, :delete, "/webhook/#{webhook_id}")
+  def delete(client, webhook_id),
+    do: Request.request(client, :delete, "/webhook/#{Request.segment(webhook_id)}")
 
   @doc """
   Verifies a webhook delivery signature (constant-time).

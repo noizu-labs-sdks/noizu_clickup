@@ -18,6 +18,9 @@ defmodule Noizu.ClickUp.Client do
     * `:max_retries` — retries on HTTP 429 (default 2)
     * `:retry_cap_ms` — upper bound on the sleep between 429 retries
       (default 15_000)
+    * `:retry_sleep` — sleep function invoked with the clamped wait (in ms)
+      between 429 retries; defaults to `&Process.sleep/1`. Override in tests
+      to observe waits without really sleeping.
   """
 
   @default_base_url "https://api.clickup.com/api/v2"
@@ -27,7 +30,8 @@ defmodule Noizu.ClickUp.Client do
             base_url: @default_base_url,
             req_options: [],
             max_retries: 2,
-            retry_cap_ms: 15_000
+            retry_cap_ms: 15_000,
+            retry_sleep: &Process.sleep/1
 
   @typedoc "Authentication header style."
   @type auth_style :: :personal | :bearer
@@ -38,7 +42,8 @@ defmodule Noizu.ClickUp.Client do
           base_url: String.t(),
           req_options: keyword(),
           max_retries: non_neg_integer(),
-          retry_cap_ms: pos_integer()
+          retry_cap_ms: pos_integer(),
+          retry_sleep: (pos_integer() -> any())
         }
 
   @doc """
@@ -66,6 +71,22 @@ defmodule Noizu.ClickUp.Client do
   @spec default_base_url() :: String.t()
   def default_base_url, do: @default_base_url
 
+  @doc """
+  Redacts a token for debug output (`inspect/2`, logs): at most the first four
+  characters survive, suffixed with `[REDACTED]` — never the full secret.
+  """
+  @spec redacted_token(term()) :: String.t() | nil
+  def redacted_token(nil), do: nil
+
+  def redacted_token(token) when is_binary(token) do
+    case String.split_at(token, 4) do
+      {_prefix, ""} -> "[REDACTED]"
+      {prefix, _rest} -> prefix <> "[REDACTED]"
+    end
+  end
+
+  def redacted_token(_other), do: "[REDACTED]"
+
   @doc false
   @spec authorization_headers(t()) :: [{String.t(), String.t()}]
   def authorization_headers(%__MODULE__{token: nil}) do
@@ -81,4 +102,14 @@ defmodule Noizu.ClickUp.Client do
   def authorization_headers(%__MODULE__{token: token, auth_style: :bearer})
       when is_binary(token),
       do: [{"authorization", "Bearer " <> token}]
+end
+
+defimpl Inspect, for: Noizu.ClickUp.Client do
+  # T-001: the struct carries a long-lived credential, so the default inspect
+  # would print it into logs, telemetry, and crash reports. Only the token is
+  # masked; every other field stays debuggable.
+  def inspect(client, opts) do
+    redacted = Noizu.ClickUp.Client.redacted_token(client.token)
+    Inspect.Any.inspect(%{client | token: redacted}, opts)
+  end
 end

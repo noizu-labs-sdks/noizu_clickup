@@ -13,11 +13,12 @@ defmodule Noizu.ClickUp.Folder do
   """
   @spec list(Client.t(), String.t() | integer(), keyword()) :: {:ok, map()} | {:error, Error.t()}
   def list(client, space_id, opts \\ []),
-    do: Request.request(client, :get, "/space/#{space_id}/folder", params: opts)
+    do: Request.request(client, :get, "/space/#{Request.segment(space_id)}/folder", params: opts)
 
   @doc "Gets one folder. `GET /folder/{folder_id}` — returns the folder object."
   @spec get(Client.t(), String.t() | integer()) :: {:ok, map()} | {:error, Error.t()}
-  def get(client, folder_id), do: Request.request(client, :get, "/folder/#{folder_id}")
+  def get(client, folder_id),
+    do: Request.request(client, :get, "/folder/#{Request.segment(folder_id)}")
 
   @doc """
   Creates a folder. `POST /space/{space_id}/folder`.
@@ -27,7 +28,7 @@ defmodule Noizu.ClickUp.Folder do
   """
   @spec create(Client.t(), String.t() | integer(), map()) :: {:ok, map()} | {:error, Error.t()}
   def create(client, space_id, attrs),
-    do: Request.request(client, :post, "/space/#{space_id}/folder", json: attrs)
+    do: Request.request(client, :post, "/space/#{Request.segment(space_id)}/folder", json: attrs)
 
   @doc """
   Renames a folder. `PUT /folder/{folder_id}` — only `name` is honored
@@ -35,9 +36,10 @@ defmodule Noizu.ClickUp.Folder do
   """
   @spec update(Client.t(), String.t() | integer(), map()) :: {:ok, map()} | {:error, Error.t()}
   def update(client, folder_id, attrs),
-    do: Request.request(client, :put, "/folder/#{folder_id}", json: attrs)
+    do: Request.request(client, :put, "/folder/#{Request.segment(folder_id)}", json: attrs)
 
   @doc "Deletes a folder. `DELETE /folder/{folder_id}` — returns `{:ok, %{}}`."
   @spec delete(Client.t(), String.t() | integer()) :: {:ok, map()} | {:error, Error.t()}
-  def delete(client, folder_id), do: Request.request(client, :delete, "/folder/#{folder_id}")
+  def delete(client, folder_id),
+    do: Request.request(client, :delete, "/folder/#{Request.segment(folder_id)}")
 end

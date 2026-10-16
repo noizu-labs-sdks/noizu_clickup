@@ -48,7 +48,7 @@ graph LR
 
     CFG -->|token| AUTH
     AUTH -->|"authorization header<br/>raw pk_… or Bearer"| REQ
-    REQ -->|"paths embed caller-supplied ids unescaped"| CU
+    REQ -->|"paths embed caller-supplied ids URI-encoded per segment"| CU
     EX -->|"client_secret as GET query param (ClickUp-documented)"| CU
     CU -->|"untrusted JSON → returned as-is / inspected into error text"| ERR
     CU -.->|"deliveries: X-Signature = HMAC-SHA256(raw body)"| EP
@@ -64,11 +64,11 @@ graph LR
 
 | ID | Severity | STRIDE | Component | Finding | Status |
 |----|----------|--------|-----------|---------|--------|
-| T-001 | **High** | Info disclosure | `Client` struct | No redacting `Inspect` impl — `inspect(client)`, debug logs, or telemetry of the struct prints the **raw token** | **Open** (owner: library maintainers; fix = `defimpl Inspect` masking `token`) |
+| T-001 | **High** | Info disclosure | `Client` struct | No redacting `Inspect` impl — `inspect(client)`, debug logs, or telemetry of the struct prints the **raw token** | **Mitigated 2026-10-17** (`defimpl Inspect` masks `token` to a ≤4-char prefix + `[REDACTED]`; evidence: `Noizu.ClickUp.RedactionTest` "inspect/1 of a client never contains the raw token") |
 | T-002 | Medium | Info disclosure | `OAuth.exchange_code/4` | `client_secret` travels as a **GET query param** (ClickUp's documented form) — visible to intermediary/proxy/access logs | Accepted (API-mandated; see [token-handling](threats/token-handling.md)) |
-| T-003 | Medium | Spoofing / Repudiation | `Webhook.verify_signature/3` | Signature covers the body only — **no timestamp/nonce**, so a captured delivery replays verbatim and verifies `true` indefinitely | Open (inherent to ClickUp's scheme; consumer dedup required — see [webhook-signature](threats/webhook-signature.md)) |
+| T-003 | Medium | Spoofing / Repudiation | `Webhook.verify_signature/3` | Signature covers the body only — **no timestamp/nonce**, so a captured delivery replays verbatim and verifies `true` indefinitely | Open — inherent to ClickUp's scheme; consumer guidance (raw-body verify + dedupe on `webhook_id`/`event`/`history_items[].id`) is now in the `Webhook` moduledoc and README (see [webhook-signature](threats/webhook-signature.md)) |
 | T-004 | Medium | Supply chain | `mix.lock` tree | Compromise of a Hex package (`req` → `finch` → `mint`/`castore`, `jason`, …) executes inside every consumer and can exfiltrate tokens | Mitigated (pinned lockfile w/ sha256, minimal runtime deps, pure Elixir, no NIFs/git/path deps; residual Hex-registry risk accepted — see [supply-chain](threats/supply-chain.md)) |
-| T-005 | Low | Tampering | Resource modules | Resource ids are interpolated **unescaped** into URL paths (`"/task/#{task_id}"`) — a crafted id can alter the path/query (confused deputy within the ClickUp API) | Open (owner: library maintainers; fix = encode path segments) |
+| T-005 | Low | Tampering | Resource modules | Resource ids are interpolated **unescaped** into URL paths (`"/task/#{task_id}"`) — a crafted id can alter the path/query (confused deputy within the ClickUp API) | **Mitigated 2026-10-17** (all ids encoded via `Noizu.ClickUp.Request.segment/1` (`URI.encode/2` + `char_unreserved?`); evidence: `Noizu.ClickUp.PathEncodingTest` "an id with traversal and query material stays one opaque segment") |
 | T-006 | Low | Info disclosure | `Client` / `OAuth` | `base_url` override sends the token to an arbitrary host — config typo or tampering exfiltrates credentials | Accepted (feature by design; consumer config is trusted boundary) |
 | T-007 | Low | DoS | `Request` retry loop | 429 retry **blocks the caller** up to `retry_cap_ms` (15 s) × `max_retries` (2) ≈ 30 s in a synchronous `Process.sleep/1` — calling from a LiveView/GenServer stalls that process | Mitigated (bounded by construction; consumer placement guidance — see [retry-behavior](threats/retry-behavior.md)) |
 | T-008 | Low | Info disclosure | `Error` struct | Non-map error bodies are `inspect`ed (truncated to 500 chars) into `message` — upstream error content can reach consumer logs/crash reports | Mitigated (truncation; **no token ever enters the error path** — `error.ex` builds messages from status/body only) |
@@ -78,10 +78,11 @@ graph LR
 
 ## Mitigation Coverage
 
-4 mitigated · 3 open · 2 accepted. The two highest-value open items are
-T-001 (token-printing `Inspect`) and T-003 (webhook replay); both are tracked
-here with owners pending tickets. Accepted items are re-reviewed whenever
-ClickUp changes the auth/webhook scheme.
+6 mitigated · 1 open · 2 accepted. The remaining open item is T-003 (webhook
+replay), inherent to ClickUp's scheme — the library now documents the effective
+consumer mitigations (raw-body verification + dedupe) in the `Webhook`
+moduledoc and README. Accepted items are re-reviewed whenever ClickUp changes
+the auth/webhook scheme.
 
 → *Control details: [threats/token-handling.md](threats/token-handling.md) ·
 [threats/webhook-signature.md](threats/webhook-signature.md) ·
@@ -90,6 +91,9 @@ ClickUp changes the auth/webhook scheme.
 
 ## What Is Done Right (positive controls)
 
+- **Redacting `Inspect` on the client** — `inspect/2` of `%Client{}` masks the
+  token to a ≤4-character prefix + `[REDACTED]` (T-001), so debug logs,
+  telemetry, and crash reports never carry the raw credential (test-covered).
 - **Constant-time signature compare** — `verify_signature/3` recomputes
   HMAC-SHA256 over the raw body, guards byte length, then compares via
   `:crypto.hash_equals/2` (constant time); wrong length, wrong secret, tampered
@@ -99,8 +103,10 @@ ClickUp changes the auth/webhook scheme.
   `authorization` header in `%Req.Request{}` inspect output (verified in
   req 0.7.5).
 - **Single, bounded retry layer** — Req's built-in retry is disabled; only 429
-  is retried, at most `max_retries` times, sleeps clamped to `retry_cap_ms`.
-  Mutations are never re-sent on 5xx/timeouts.
+  is retried, at most `max_retries` times, sleeps clamped to `0..retry_cap_ms`
+  regardless of what an untrusted `X-RateLimit-Reset`/`Retry-After` value says
+  (negative, past, garbage, or far-future values included; test-covered with an
+  injectable sleep). Mutations are never re-sent on 5xx/timeouts.
 - **Fail-fast configuration** — building a token-less client raises
   `ArgumentError` before any HTTP; unknown `new/1` keys raise via `struct!/2`.
 - **Hermetic tests** — all suites run against `Req.Test` stubs; no live tokens

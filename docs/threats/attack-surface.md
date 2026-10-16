@@ -35,7 +35,7 @@ with STRIDE applied per crossing.
 | Crossing | S | T | R | I | D | E |
 |---|---|---|---|---|---|---|
 | Consumer config → library | token sourcing | base_url (T-006) | — | token in struct (T-001) | blocking sleep (T-007) | req_options code |
-| Library → ClickUp API | — | unescaped path ids (T-005) | request receipts on ClickUp side | secret in OAuth query (T-002) | retry amplification vs rate budget | — |
+| Library → ClickUp API | — | path ids URI-encoded per segment (T-005 mitigated) | request receipts on ClickUp side | secret in OAuth query (T-002) | retry amplification vs rate budget | — |
 | ClickUp → webhook endpoint | forged deliveries (blocked by HMAC, T-003 residual: replay) | body tampering (fails closed) | no delivery log in library | secret needed to verify | — | — |
 | hex.pm → build | typosquat/compromise (T-004) | lockfile tampering | — | — | dep availability | malicious dep code runs in consumer |
 

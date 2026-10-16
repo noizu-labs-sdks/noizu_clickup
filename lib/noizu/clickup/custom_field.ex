@@ -22,7 +22,7 @@ defmodule Noizu.ClickUp.CustomField do
   @spec list_accessible(Client.t(), String.t() | integer()) ::
           {:ok, map()} | {:error, Error.t()}
   def list_accessible(client, list_id),
-    do: Request.request(client, :get, "/list/#{list_id}/field")
+    do: Request.request(client, :get, "/list/#{Request.segment(list_id)}/field")
 
   @doc """
   Sets a custom field value on a task.
@@ -34,7 +34,13 @@ defmodule Noizu.ClickUp.CustomField do
   @spec set_value(Client.t(), String.t(), String.t(), map(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
   def set_value(client, task_id, field_id, body, opts \\ []) do
-    Request.request(client, :post, "/task/#{task_id}/field/#{field_id}", params: opts, json: body)
+    Request.request(
+      client,
+      :post,
+      "/task/#{Request.segment(task_id)}/field/#{Request.segment(field_id)}",
+      params: opts,
+      json: body
+    )
   end
 
   @doc """
@@ -44,6 +50,9 @@ defmodule Noizu.ClickUp.CustomField do
   """
   @spec remove_value(Client.t(), String.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, Error.t()}
-  def remove_value(client, task_id, field_id, opts \\ []),
-    do: Request.request(client, :delete, "/task/#{task_id}/field/#{field_id}", params: opts)
+  def remove_value(client, task_id, field_id, opts \\ []) do
+    path = "/task/#{Request.segment(task_id)}/field/#{Request.segment(field_id)}"
+
+    Request.request(client, :delete, path, params: opts)
+  end
 end

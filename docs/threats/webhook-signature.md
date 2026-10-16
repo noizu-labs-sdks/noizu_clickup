@@ -44,8 +44,13 @@ many times, and cannot be *distinguished* from ClickUp by signature alone.
 double notifications), and un-attributable deliveries. It does **not** let an
 attacker *forge new* event content — bodies still need the secret.
 
-**Status: Open** (owner: library maintainers / shared with ClickUp's scheme —
-cannot be fixed unilaterally; would need ClickUp to sign a timestamp).
+**Status: Open** (inherent to ClickUp's scheme — cannot be fixed unilaterally;
+would need ClickUp to sign a timestamp). The library ships **no new crypto**
+against this; instead the effective consumer mitigations are now documented
+where consumers will see them — the `Noizu.ClickUp.Webhook` moduledoc and the
+README ("Webhook verification") both instruct: verify against the **raw body**
+and **dedupe on `webhook_id` + `event` + `history_items[].id`**.
+
 **Consumer mitigations (effective today):**
 
 1. Dedup on whatever delivery-identifying fields ClickUp's payload carries
