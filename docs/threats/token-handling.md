@@ -18,37 +18,39 @@ Scope: the ClickUp token (personal `pk_…` or OAuth access token) and the OAuth
    or the transport exception text. A token never appears in
    `{:error, %Error{}}` or in anything a stream raises.
 
-## T-001 (High) — `%Client{}` has no redacting `Inspect`
+## T-001 (High) — `%Client{}` inspect redaction — **Mitigated 2026-10-17**
 
-**Finding.** The struct carries `token` as a plain binary with no
-`defimpl Inspect`. Any of these prints the raw token into logs, telemetry, or
-crash reports:
+**Finding.** The struct carries `token` as a plain binary. Without a
+`defimpl Inspect`, any of these would print the raw token into logs, telemetry,
+or crash reports:
 
 ```elixir
-Logger.debug("client: #{inspect(client)}")   # prints token: "pk_..."
+Logger.debug("client: #{inspect(client)}")   # would print token: "pk_..."
 ```
 
-Streams amplify this in a subtle way: a raised `%Error{}` renders via its own
+**Mitigation (shipped).** `Client` now has a redacting `Inspect` impl and a
+`Client.redacted_token/1` helper: the token renders as at most its first four
+characters followed by `[REDACTED]` (e.g. `"pk_s[REDACTED]"`); every other
+field stays debuggable. `nil` stays `nil`.
+
+```elixir
+iex> inspect(Client.new(token: "pk_sup3rsecret"))
+"%Noizu.ClickUp.Client{token: \"pk_s[REDACTED]\", auth_style: :personal, ...}"
+```
+
+**Evidence:** `test/noizu/clickup/redaction_test.exs` (`Noizu.ClickUp.RedactionTest`) —
+"inspect/1 of a client never contains the raw token", plus assertions that the
+prefix and the remaining fields survive, that a failed API call never surfaces
+the token in `%Error{}` inspect/message, and that a failed OAuth exchange never
+surfaces the `client_secret` in the error.
+
+Streams amplify leaks subtly: a raised `%Error{}` renders via its own
 `message/1` (safe), but an **uncaught** consumer crash whose process dictionary
 or message queue holds the client can surface the struct in crash reports and
-`erl_crash.dump`.
+`erl_crash.dump` — with the redacting `Inspect`, those reports now mask the
+token too.
 
-**Why it matters.** Personal tokens do not expire (ClickUp-documented); a
-leaked token grants full workspace read/write until manually revoked.
-
-**Status: Open** (owner: library maintainers). Fix is small and backward
-compatible:
-
-```elixir
-defimpl Inspect, for: Noizu.ClickUp.Client do
-  def inspect(client, opts) do
-    %Noizu.ClickUp.Client{client | token: redact(client.token)}
-    |> Inspect.Any.inspect(opts)   # mask token, keep the rest debuggable
-  end
-end
-```
-
-**Interim consumer guidance:** treat `%Client{}` like a password — never log
+**Residual consumer guidance:** treat `%Client{}` like a password — never log
 it, scope tokens per integration, rotate on suspicion. Note that inspecting a
 `%Req.Request{}` *is* safe: Req 0.7.5 redacts the `authorization` header value
 in its own Inspect implementation (verified in `deps/req/lib/req/request.ex`).

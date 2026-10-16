@@ -63,6 +63,17 @@ failure returns `{:error, %Noizu.ClickUp.Error{status, code, message}}`.
 Noizu.ClickUp.Webhook.verify_signature(secret, raw_body, x_signature_header)
 ```
 
+Two obligations the library cannot do for you (ClickUp's scheme signs the body
+only — no timestamp, so a captured delivery verifies forever):
+
+- **Verify against the raw request body** — capture the bytes before
+  `Plug.Parsers`. Re-serialized JSON returns `false` (fails closed).
+- **Dedupe deliveries** — persist processed ids and drop repeats, keyed on
+  `webhook_id` + `event` plus the `history_items[].id` values in the payload;
+  and/or make handlers idempotent so a replay is a no-op.
+
+See `docs/threats/webhook-signature.md` (T-003) for the full analysis.
+
 ## License
 
 MIT — see the `LICENSE` file in the repository.
