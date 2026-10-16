@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning: SemVer.
 
+## Unreleased
+
+### Added
+- Project docs: layout map (`docs/PROJ-LAYOUT.md` + `docs/layout/`), architecture overview
+  (`docs/PROJ-ARCH.md` + `docs/arch/`), threat model (`docs/THREAT-MODEL.md` + `docs/threats/`),
+  and durable doc pointers (`.meta/pointers.yaml`).
+
 ## 0.1.0 - 2026-10-17
 
 Initial release. Contract-first client for the ClickUp API v2 (see `docs/API-CONTRACT.md`).

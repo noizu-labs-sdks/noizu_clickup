@@ -1,5 +1,7 @@
 # Noizu.ClickUp — API Contract
 
+<!-- 〚📁:13c09693-e042-5f66-87a2-8a7e9d10bf66〛 noizu_clickup:api_contract :: ClickUp API v2 client contract — endpoint coverage, pagination, error shape, rate-limit/retry behavior; source of truth, deviations are bugs. -->
+
 Elixir client contract for the **ClickUp API v2**. Every fact below was verified against the
 official reference at `developer.clickup.com` (2026-10-17); endpoint pages are cited inline.
 The client follows this document; deviations are bugs.
