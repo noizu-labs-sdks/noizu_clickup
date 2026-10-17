@@ -2,7 +2,7 @@ defmodule Noizu.ClickUp.MixProject do
   use Mix.Project
 
   @version "0.1.0"
-  @source_url "https://github.com/noizu-labs/noizu_clickup"
+  @source_url "https://github.com/noizu-labs-sdks/noizu_clickup"
 
   def project do
     [
