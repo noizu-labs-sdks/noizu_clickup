@@ -31,6 +31,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 - CI: GitHub Actions workflow (format check, `--warnings-as-errors` compile, tests,
   `mix hex.audit`) on Elixir 1.15/OTP 25 and 1.18/OTP 27 for push/PR on develop, stage, main.
 
+### Changed
+- Moved the project to the `noizu-labs-sdks` GitHub org: the source/homepage/package links
+  in `mix.exs` now point at `github.com/noizu-labs-sdks/noizu_clickup`.
+
 ## 0.1.0 - 2026-10-17
 
 Initial release. Contract-first client for the ClickUp API v2 (see `docs/API-CONTRACT.md`).
