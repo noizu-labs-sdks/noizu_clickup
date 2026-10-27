@@ -75,6 +75,18 @@ pointers:
         line: 6
     token: 𓍭𓷈𓑿𓶄
     updated_at: 2026-10-16T22:06:28.721849Z
+  96a6db30-52dc-5b30-b51e-8a20cec88a62:
+    created_at: 2026-10-27T05:27:36.957276Z
+    description: Structured-data inventory for a stateless client — wire shapes, Client/Error structs, app-env config; no persistence layer, ERD n/a.
+    file_path: docs/PROJ-SCHEMA.md
+    function: noizu_clickup:proj_schema
+    kind: file
+    line: 3
+    locations:
+      - file_path: docs/PROJ-SCHEMA.md
+        line: 3
+    token: 𔍮𓒦𓌗𔉢
+    updated_at: 2026-10-27T05:27:36.957276Z
   b4d161ac-ed04-5a62-a5fb-39eaae4dca77:
     created_at: 2026-10-16T22:06:28.721869Z
     description: System diagram — consumer → resource modules → Request layer → ClickUp API v2, with OAuth and webhook-verify side paths.

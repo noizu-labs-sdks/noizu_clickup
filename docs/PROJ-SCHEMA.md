@@ -1,5 +1,7 @@
 # Project Schema
 
+<!-- 〚📁:96a6db30-52dc-5b30-b51e-8a20cec88a62〛 noizu_clickup:proj_schema :: Structured-data inventory for a stateless client — wire shapes, Client/Error structs, app-env config; no persistence layer, ERD n/a. -->
+
 `noizu_clickup` is a stateless client library: **no persistence layer exists** —
 no database, no Ecto/Liquibase changelogs, no KV/Redis, no on-disk data files.
 The only runtime state the library holds is the caller-owned
