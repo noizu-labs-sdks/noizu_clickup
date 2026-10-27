@@ -16,7 +16,9 @@ test/
 │   ├── custom_field_test.exs        # Definitions, set/clear values
 │   ├── member_tag_test.exs          # Members + tags
 │   ├── time_entry_test.exs          # Time entries + timers
-│   └── webhook_test.exs             # Webhook CRUD + signature verification
+│   ├── webhook_test.exs             # Webhook CRUD + signature verification
+│   ├── redaction_test.exs           # Token never surfaces in inspect/log/error output (T-001)
+│   └── path_encoding_test.exs       # Resource ids stay one encoded path segment (T-005)
 ├── support/
 │   └── case.ex                      # `Noizu.ClickUp.Case`: Req.Test case template
 └── test_helper.exs                  # ExUnit bootstrap
@@ -29,4 +31,6 @@ test/
   ClickUp endpoint instead of a real base URL.
 - Suite names mirror the modules they cover; the split `error_rate_limit_test.exs`
   and the combined `member_tag_test.exs` / `space_folder_list_test.exs` /
-  `user_workspace_test.exs` group small resource pairs.
+  `user_workspace_test.exs` group small resource pairs. The two security suites
+  (`redaction_test.exs`, `path_encoding_test.exs`) cover cross-cutting controls
+  rather than a single resource module.

@@ -32,6 +32,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   `mix hex.audit`) on Elixir 1.15/OTP 25 and 1.18/OTP 27 for push/PR on develop, stage, main.
 
 ### Changed
+- Doc sweep: added `docs/PROJ-SCHEMA.md` + summary (structured-data inventory — wire shapes,
+  Client/Error structs, app-env config; no persistence layer exists), recorded the two
+  security suites in `docs/layout/test.md`, corrected the suite count in
+  `PROJ-LAYOUT.summary.md`, and listed all docs in both layout trees.
 - Moved the project to the `noizu-labs-sdks` GitHub org: the source/homepage/package links
   in `mix.exs` now point at `github.com/noizu-labs-sdks/noizu_clickup`.
 

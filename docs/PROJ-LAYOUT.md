@@ -18,9 +18,13 @@ noizu_clickup/
 │   └── test_helper.exs               # ExUnit bootstrap
 ├── docs/                             # Project documentation
 │   ├── API-CONTRACT.md               # Contract-first endpoint/behavior spec
-│   ├── PROJ-LAYOUT.md                # This file
-│   ├── PROJ-LAYOUT.summary.md        # Bare tree companion (tool/agent reference)
-│   └── layout/                       # Detailed per-directory breakdowns
+│   ├── PROJ-LAYOUT.md                # This file (+ .summary.md companion)
+│   ├── PROJ-ARCH.md                  # Architecture overview (+ .summary.md)
+│   ├── PROJ-SCHEMA.md                # Structured-data inventory (+ .summary.md)
+│   ├── THREAT-MODEL.md               # Living threat model (+ .summary.md)
+│   ├── layout/                       # Detailed per-directory breakdowns
+│   ├── arch/                         # Request lifecycle + errors/retry detail
+│   └── threats/                      # Threat-model detail sections
 ├── .formatter.exs                    # Elixir formatter config (line length)
 ├── .gitignore                        # _build/, deps/, doc/, cover/, tarballs
 ├── CHANGELOG.md                      # Dated work log, newest first
